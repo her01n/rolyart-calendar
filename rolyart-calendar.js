@@ -7,6 +7,7 @@ function RolyartCalendar(config){
     this.currentYear = this.today.getFullYear();
     this.months = config.months;
     this.weekDays = config.weekDays;
+    this.firstDayOfWeek = config.firstDayOfWeek || 0;
     /** 
      * Calendar navigation
      * nextMonth()
@@ -38,12 +39,12 @@ function RolyartCalendar(config){
      * getNextDays()
      * getCurrentDays()
      */
-    this.getPrevDays = (date, staDay=0)=>{
+    this.getPrevDays = (date)=>{
         let ret = [];
         let year = date.getFullYear();
         let month = date.getMonth();
         let firstWeekday =  new Date(year, month, 1).getDay();
-        let days = (firstWeekday + 7) - (staDay +7) - 1;
+        let days = (firstWeekday + 7) - (this.firstDayOfWeek + 7) - 1;
         for (let i=days * -1; i<=0;i++){
             ret.push({date:new Date(year, month, i).getDate(), type:"not-current", id:new Date(year, month, i) });  
         }
@@ -118,8 +119,9 @@ function RolyartCalendar(config){
 
         let weekDays = document.createElement('div');
         weekDays.classList.add('week-days');
-        for(let i = 0; i<=6;i++){
-            weekDays.innerHTML +=`<div>${this.weekDays[i]}</div>`;
+        for(let i = 0; i<=6;i++) {
+            let day = this.weekDays[(i + this.firstDayOfWeek) % 7];
+            weekDays.innerHTML +=`<div>${day}</div>`;
         }
 
         header.appendChild(monthAndYear)

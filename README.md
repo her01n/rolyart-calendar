@@ -12,3 +12,10 @@ Simple pure JS calendar. [Demo](http://apps.rolyart.ro/rolyart-calendar)
     weekDays: ["S", "M", "T", "W", "T", "F", "S"],
 }
 let calendar = new RolyartCalendar(config)`
+
+## Configuration
+
+- firstDayOfWeek
+
+  Configure start of the week day. 0 for Sunday, 1 for Monday. Default is Sunday. 
+  The weekDays array always starts from Sunday.
