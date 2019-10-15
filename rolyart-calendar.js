@@ -2,12 +2,44 @@ function RolyartCalendar(config){
     this.container = document.getElementById(config.container);
     this.container.classList.add('rolyart-calendar');
     this.today = new Date();
-    this.selected  = this.today;
     this.currentMonth = this.today.getMonth();
     this.currentYear = this.today.getFullYear();
     this.months = config.months;
     this.weekDays = config.weekDays;
     this.firstDayOfWeek = config.firstDayOfWeek || 0;
+    this.daySelection = config.daySelection || 'single';
+
+    /** 
+     * YYYY-MM-DD date format
+     * YYYYmmdd()
+     */
+    this.YYYYmmdd = (date)=>{
+        let d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+        if (month.length < 2) 
+            month = '0' + month;
+        if (day.length < 2) 
+        day = '0' + day;
+        return [year, month, day].join('-');
+    }
+
+    /**
+     * Selection
+     */
+    var selected = this.YYYYmmdd(this.today);
+    if (this.daySelection === 'toggle') {
+        selected = [this.YYYYmmdd(this.today)];
+    }
+    Object.defineProperty(this, "selected", {
+        get() { return selected; },
+        set(newValue) { 
+            selected = newValue; 
+            this.showCalendar(this.currentYear, this.currentYear); 
+        },
+    });
+
     /** 
      * Calendar navigation
      * nextMonth()
@@ -69,21 +101,6 @@ function RolyartCalendar(config){
         return ret;
     }
 
-    /** 
-     * YYYY-MM-DD date format
-     * YYYYmmdd()
-     */
-    this.YYYYmmdd = (date)=>{
-        let d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-        if (month.length < 2) 
-            month = '0' + month;
-        if (day.length < 2) 
-        day = '0' + day;
-        return [year, month, day].join('-');
-    }
 
     this.calendarHeader = ()=>{
         let header = document.createElement('header');
@@ -131,6 +148,16 @@ function RolyartCalendar(config){
         this.container.appendChild(header);
         this.container.appendChild(weekDays);
     }
+
+    this.selectedDays = () => {
+        if (typeof this.selected === 'string') {
+            return [this.selected];
+        } else if (this.selected instanceof Array) {
+            return this.selected;
+        } else {
+            return [];
+        }
+    }
     
     this.calendarBody = (year, month)=>{
         year = this.currentYear;
@@ -141,6 +168,7 @@ function RolyartCalendar(config){
         let daysNextMonth = this.getNextDays(daysPrevMonth, daysThisMonth);
         let calendarBody = document.createElement('div');
         calendarBody.classList.add('calendar-body');
+        let selectedDays = this.selectedDays();
         [...daysPrevMonth, ...daysThisMonth, ...daysNextMonth]
         .forEach(num=>{
             let cell = document.createElement('div');
@@ -151,17 +179,27 @@ function RolyartCalendar(config){
             day.innerHTML = num.date;
             cell.appendChild(day);
             cell.addEventListener('click', ()=>{
-                this.selected = num.id;
-                
-                let selected = document.getElementsByClassName("selected");
-                if (selected.length > 0) { 
-                    selected[0].className = selected[0].className.replace(" selected", "");
-                }         
-                cell.className += " selected"; 
+                if (this.daySelection === 'single') {
+                    this.selected = num.id;
+                } else if (this.daySelection === 'toggle') {
+                    let selectedDays = this.selectedDays();
+                    let index = selectedDays.indexOf(num.id);
+                    if (index == -1) {
+                        selectedDays.push(num.id);
+                    } else {
+                        selectedDays.splice(index, 1);
+                    }
+                    this.selected = selectedDays;
+                } else if (this.daySelection instanceof Function) {
+                    this.daySelection(num.id);
+                }
             });
             num.type === 'not-current'?cell.classList.add('not-current'):cell.classList.add('current');
             if(num.id === this.YYYYmmdd(this.today)){
                 cell.classList.add('active');
+            }
+            if (selectedDays.indexOf(num.id) > -1) {
+                cell.classList.add('selected');
             }
             calendarBody.appendChild(cell);
         })
