@@ -83,6 +83,11 @@
   -webkit-transform: rotate(-45deg);
 }
 
+.calendar-header button:disabled .arrow {
+  border: solid #DDD;
+  border-width: 0 2px 2px 0;
+}
+
 .week-days {
   display: -webkit-box;
   display: -ms-flexbox;

@@ -34,3 +34,12 @@ as an array of strings. Assign to this variable to programatically change the se
   - If set to a function, this function would be called after user click the day,
   with the day as a single argument. No implicit selection change would be performed,
   the function can change *selected* property.
+
+- min, max
+
+  Constraint the selectable and browsable dates. 
+  User cannot select a date that is before min or after max day.
+  User cannot browse to a month that is outside the specified range.
+  The value is a string in format "YYYY-MM-DD". 
+  Any of the value could be null, the calendar is not constrained in this direction, 
+  this is the default.

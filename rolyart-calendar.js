@@ -8,6 +8,8 @@ function RolyartCalendar(config){
     this.weekDays = config.weekDays;
     this.firstDayOfWeek = config.firstDayOfWeek || 0;
     this.daySelection = config.daySelection || 'single';
+    this.min = config.min;
+    this.max = config.max;
 
     /** 
      * YYYY-MM-DD date format
@@ -101,6 +103,20 @@ function RolyartCalendar(config){
         return ret;
     }
 
+    this.inRange = (date)=>{
+        var after = new Date(date);
+        after.setHours(12);
+        var before = new Date(date);
+        before.setDate(date.day - 1);
+        before.setHours(12);
+        if (this.min) {
+            if (new Date(this.min) > after) return false;
+        }
+        if (this.max) {
+            if (new Date(this.max) < before) return false;
+        }
+        return true;
+    }
 
     this.calendarHeader = ()=>{
         let header = document.createElement('header');
@@ -113,18 +129,37 @@ function RolyartCalendar(config){
         monthAndYear.classList.add('month-year');
         monthAndYear.innerHTML = `${this.months[this.currentMonth] +' '+ this.currentYear}`;
         
+        var prevMonthEnabled = true;
+        if (this.min) {
+            let prevMonthEnd = new Date(this.currentYear, this.currentMonth, 0);
+            prevMonthEnd.setHours(12);
+            prevMonthEnabled = new Date(this.min) < prevMonthEnd;
+        }
         prevMonth.innerHTML = '<i class="arrow prev-month"></i>'
-        prevMonth.addEventListener('click', ()=>{
-            this.prevMonth(); 
-            monthAndYear.innerHTML = `${this.months[this.currentMonth] +' '+ this.currentYear}`;
-        })
+        if (prevMonthEnabled) {
+            prevMonth.addEventListener('click', ()=>{
+                this.prevMonth();
+                monthAndYear.innerHTML = `${this.months[this.currentMonth] +' '+ this.currentYear}`;
+            })
+        } else {
+            prevMonth.disabled = true;
+        }
 
+        var nextMonthEnabled = true;
+        if (this.max) {
+            let monthEnd = new Date(this.currentYear, this.currentMonth + 1, 0);
+            monthEnd.setHours(12);
+            nextMonthEnabled = new Date(this.max) > monthEnd;
+        }
         nextMonth.innerHTML = '<i class="arrow next-month"></i>'
-        nextMonth.addEventListener('click', ()=>{
-            this.nextMonth(); 
-            monthAndYear.innerHTML = `${this.months[this.currentMonth] +' '+ this.currentYear}`;
-        })
-
+        if (nextMonthEnabled) {
+            nextMonth.addEventListener('click', ()=>{
+                this.nextMonth(); 
+                monthAndYear.innerHTML = `${this.months[this.currentMonth] +' '+ this.currentYear}`;
+            })
+        } else {
+            nextMonth.disabled = true;
+        }
 
         currentMonth.innerHTML = '<i class="current-month"></i>'
         currentMonth.addEventListener('click', ()=>{
@@ -179,6 +214,7 @@ function RolyartCalendar(config){
             day.innerHTML = num.date;
             cell.appendChild(day);
             cell.addEventListener('click', ()=>{
+                if (!this.inRange(num.id)) return false;
                 if (this.daySelection === 'single') {
                     this.selected = num.id;
                 } else if (this.daySelection === 'toggle') {
