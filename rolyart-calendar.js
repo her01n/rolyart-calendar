@@ -78,9 +78,10 @@ function RolyartCalendar(config){
         let year = date.getFullYear();
         let month = date.getMonth();
         let firstWeekday =  new Date(year, month, 1).getDay();
-        let days = (firstWeekday + 7) - (this.firstDayOfWeek + 7) - 1;
-        for (let i=days * -1; i<=0;i++){
-            ret.push({date:new Date(year, month, i).getDate(), type:"not-current", id:new Date(year, month, i) });  
+        let days = (firstWeekday - this.firstDayOfWeek + 7) % 7;
+        for (let i = 0; i < days; i++) {
+            let day = i - days + 1;
+            ret.push({date:new Date(year, month, day).getDate(), type:"not-current", id:new Date(year, month, day) });
         }
         return ret;
     }
